@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <contextName>${HOSTNAME}</contextName>
+    <property name="ULP_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS}$$${HOSTNAME}$$%level{}$$cat-demo$$%thread{}$$$$$$%X{traceID}$$$$$$$$$$$$$$$$$$$$%msg%n" />
+    <property name="CONSOLE_PATTERN" value="[%logger] [%d{yyyy-MM-dd HH:mm:ss.SSS}] [%thread] [%-5level] [ %class.%method\\(%file:%line\\) ] %msg%n" />
+
+    <property name="MAX_HISTORY" value="30" />
+
+    <!-- 默认日志的console appender，本地使用的日志 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 应用日志 INFO,WARN,ERROR,FATAL-->
+    <appender name="ROLLING_FILE_APPLICATION" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH:-./}cat-demo/${HOSTNAME}_application.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${ULP_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 错误日志 ERROR,FATAL-->
+    <appender name="ROLLING_FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH:-./}cat-demo/${HOSTNAME}_error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${ULP_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- DEBUG日志 -->
+    <appender name="ROLLING_FILE_DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH:-./}cat-demo/${HOSTNAME}_debug.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${ULP_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="CatAppender" class="com.dianping.cat.logback.CatLogbackAppender"></appender>
+
+    <!-- 为简化配置, 不使用additivity="false", 现在的规则是 application, error日志中有重复的内容 -->
+    <!-- 屏蔽掉一些组件的DEBUG日志, 期望打印业务数据的debug日志, 方便查询case -->
+    <logger name="org.springframework.core" level="INFO" />
+    <logger name="org.springframework.context" level="INFO" />
+    <logger name="org.springframework.beans" level="INFO" />
+    <logger name="org.springframework.aop" level="INFO" />
+    <logger name="org.springframework.jdbc" level="INFO" />
+    <logger name="org.springframework.web" level="INFO" />
+    <logger name="org.springframework.transaction" level="INFO" />
+    <logger name="org.springframework.amqp" level="INFO" />
+    <logger name="org.springframework.boot" level="INFO" />
+    <logger name="org.apache.ibatis" level="INFO" />
+    <logger name="org.mybatis.spring" level="INFO" />
+    <logger name="io.netty" level="INFO" />
+
+
+    <root level="DEBUG">
+        <appender-ref ref="CatAppender"/>
+
+        <springProfile name="local">
+            <appender-ref ref="STDOUT"/>
+        </springProfile>
+
+        <appender-ref ref="ROLLING_FILE_APPLICATION" />
+        <appender-ref ref="ROLLING_FILE_ERROR" />
+        <appender-ref ref="ROLLING_FILE_DEBUG" />
+    </root>
+</configuration>

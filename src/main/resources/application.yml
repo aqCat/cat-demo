@@ -1,0 +1,11 @@
+
+spring:
+  application:
+    name: cat-demo
+  profiles:
+    active: local
+server:
+  port: 8082
+logging:
+  file:
+    path: D:\DevelopmentTool\workplace2\logs\cat-demo-log\
